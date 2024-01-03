@@ -1,5 +1,8 @@
 <template>
-  <main>
+  <div class="flex justify-between">
+    <ButtonBack />
+  </div>
+  <div class="container">
     <form class="w-full max-w-lg">
       <div class="flex flex-wrap -mx-3 mb-6">
         <div class="w-full md:w-1/2 px-3 mb-6 md:mb-0">
@@ -74,18 +77,11 @@
       >
         Add
       </button>
-      <button
-        @click="cancel"
-        type="button"
-        class="bg-red-700 hover:bg-red-500 text-white p-2 rounded"
-      >
-        cancel
-      </button>
     </form>
-  </main>
+  </div>
 </template>
 <style scoped>
-main {
+.container {
   height: 100vh;
   display: flex;
   justify-content: center;
@@ -96,15 +92,15 @@ main {
 import { useRouter } from 'vue-router'
 import { ref } from 'vue'
 import { useStore } from 'vuex'
+import ButtonBack from '../components/ButtonBack.vue'
+
 //alert
 const alert = ref(false)
 const alertMessage = ref('')
 //store and router
 const store = useStore()
 const router = useRouter()
-const cancel = () => {
-  router.back()
-}
+
 //ref
 const title = ref('')
 const details = ref('')

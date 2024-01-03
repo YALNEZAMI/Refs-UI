@@ -44,11 +44,12 @@
       <SearchBarRefs class="w-full" @search="search" />
     </div>
     <!--refs array-->
-    <div class="flex flex-wrap w-full p-0 mt-1">
+    <div class="flex flex-wrap justify-center w-full p-0 mt-1">
       <RefEntity
         @dislike="onDislike"
         @like="onLike"
-        class="md:w-2/5 md:mx-16 mt-1"
+        @delete="onDelete($event)"
+        class="md:w-5/12 md:mx-16 mt-1"
         v-for="ref in refs"
         :key="ref._id"
         :reference="ref"
@@ -73,11 +74,15 @@ import { ref, onMounted, watch } from 'vue'
 const store = useStore()
 
 const refs = ref([])
-const category = ref('all')
+const category = ref(store.state.category)
 onMounted(async () => {
-  refs.value = await store.dispatch('getRefs')
+  refs.value = await store.dispatch('searchRef', {
+    searchKey: store.state.searchKey,
+    category: category.value
+  })
 
-  refs.value = refs.value.sort((a, b) => b.likers.length - a.likers.length)
+  //reset comments in store when user quite the comments page
+  store.commit('setComments', [])
 })
 const search = async (searchKey) => {
   if (searchKey === '') {
@@ -95,15 +100,17 @@ const onLike = () => {
 const onDislike = () => {
   refs.value = refs.value.sort((a, b) => b.likers.length - a.likers.length)
 }
+const onDelete = async (refId) => {
+  refs.value = refs.value.filter((ref) => ref._id !== refId)
+}
 //watch category change
 watch(category, async (newValue) => {
-  if (newValue === 'all') {
-    refs.value = await store.dispatch('getRefs')
-  } else {
-    refs.value = await store.dispatch('searchRef', {
-      searchKey: '',
-      category: category.value
-    })
-  }
+  //set in the store
+  store.commit('setCategory', newValue)
+
+  refs.value = await store.dispatch('searchRef', {
+    searchKey: store.state.searchKey,
+    category: category.value
+  })
 })
 </script>

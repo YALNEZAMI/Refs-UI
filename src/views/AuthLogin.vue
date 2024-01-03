@@ -63,8 +63,8 @@ import { useStore } from 'vuex'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
-let email = ref('')
-let password = ref('')
+let email = ref('test@.')
+let password = ref('12345')
 const store = useStore()
 //alert
 let alert = ref(false)

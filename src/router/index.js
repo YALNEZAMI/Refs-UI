@@ -4,6 +4,7 @@ import AuthRegisterVue from '@/views/AuthRegister.vue'
 import AdminRefsVue from '@/views/AdminRefs.vue'
 import AddRefVue from '@/views/AddRef.vue'
 import AdminProfileVue from '@/views/AdminProfile.vue'
+import AdminCommentsVue from '@/views/AdminComments.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -47,6 +48,11 @@ const router = createRouter({
           path: 'profile',
           name: 'user profile',
           component: AdminProfileVue
+        },
+        {
+          path: 'comments/:id_Ref',
+          name: 'ref comments',
+          component: AdminCommentsVue
         }
       ]
     }

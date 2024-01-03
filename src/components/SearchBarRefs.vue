@@ -15,14 +15,16 @@
 
 <script setup>
 import { ref, defineEmits, watch } from 'vue'
+import { useStore } from 'vuex'
+const store = useStore()
 // import { useStore } from 'vuex'
 // const store = useStore()
 const emit = defineEmits(['search'])
 // Declare a reactive reference for the search key
-const searchKey = ref('')
+const searchKey = ref(store.state.searchKey)
 //watching to modification of searchKey
-watch(searchKey, (newValue, oldValue) => {
-  console.log('searchKey changed from', oldValue, 'to', newValue)
+watch(searchKey, (newValue) => {
+  store.commit('setSearchKey', newValue)
   search()
 })
 // Function to update the search key when input changes

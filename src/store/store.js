@@ -18,28 +18,32 @@ app.configure(authentication())
 //define the services
 const refsService = app.service('refs')
 const userService = app.service('users')
+const commentsService = app.service('comments')
 
 // Create a new store instance.
 export const store = createStore({
   state() {
     return {
-      accessToken: localStorage.getItem('accessToken') || '',
+      accessToken: localStorage.getItem('feather-jwt') || '',
       refs: [],
-      user: JSON.parse(localStorage.getItem('user')) || {}
+      comments: [].sort((a, b) => b.likers.length - a.likers.length),
+      user: JSON.parse(localStorage.getItem('user')) || {},
+      category: 'all',
+      searchKey: ''
     }
   },
-  getters: {
-    getAccessToken(state) {
-      return state.accessToken
-    },
-    getRefs(state) {
-      return state.refs.sort((a, b) => b.likers.length - a.likers.length)
-    }
-  },
+  getters: {},
   mutations: {
+    setCategory(state, category) {
+      state.category = category
+    },
+    setSearchKey(state, searchKey) {
+      state.searchKey = searchKey
+    },
+
     setAccessToken(state, token) {
       state.accessToken = token
-      localStorage.setItem('accessToken', token)
+      localStorage.setItem('feather-jwt', token)
     },
     setRefs(state, refs) {
       state.refs = refs
@@ -60,6 +64,22 @@ export const store = createStore({
       state.user = {}
       localStorage.removeItem('accessToken')
       localStorage.removeItem('user')
+    },
+    deleteRefInRefs(state, refId) {
+      state.refs = state.refs.filter((ref) => ref._id !== refId)
+    },
+    setComments(state, comments) {
+      state.comments = comments
+    },
+    addComment(state, comment) {
+      state.comments.push(comment)
+    },
+    deleteCommentInComments(state, commentId) {
+      state.comments = state.comments.filter((comment) => comment._id !== commentId)
+    },
+    setCommentInComments(state, comment) {
+      const index = state.comments.findIndex((c) => c._id === comment._id)
+      state.comments[index] = comment
     }
   },
   actions: {
@@ -102,6 +122,8 @@ export const store = createStore({
           Authorization: `Bearer ${state.accessToken}`
         }
       })
+      response.data = response.data.sort((a, b) => b.likers.length - a.likers.length)
+
       // //set refs in the store
       this.commit('setRefs', response.data)
       return response.data
@@ -116,23 +138,40 @@ export const store = createStore({
       this.commit('addRef', adding)
       return adding
     },
+    //delete a reference
+    async deleteRef({ state }, refId) {
+      const deleting = await refsService.remove(refId, {
+        headers: {
+          Authorization: `Bearer ${state.accessToken}`
+        }
+      })
+      if (deleting) {
+        this.commit('deleteRefInRefs', refId)
+      }
+      return deleting
+    },
     //searching for a reference
     async searchRef({ state }, { searchKey, category }) {
-      //search query depending on the category and the search key
-      let query = {
-        $and: [
-          { category: category },
-          {
-            $or: [
-              { title: { $regex: searchKey } },
-              { details: { $regex: searchKey } },
-              { category: { $regex: searchKey } }
-            ]
-          }
-        ]
+      //search query without any filter
+      let query = {}
+      //search depending on the category and the search key
+      if (category !== 'all' && searchKey !== '') {
+        query = {
+          $and: [
+            { category: category },
+            {
+              $or: [
+                { title: { $regex: searchKey } },
+                { details: { $regex: searchKey } },
+                { category: { $regex: searchKey } }
+              ]
+            }
+          ]
+        }
       }
-      //if the category is all, search in all categories
-      if (category === 'all') {
+
+      //search just depending on the search key
+      if (category === 'all' && searchKey !== '') {
         query = {
           $or: [
             { title: { $regex: searchKey } },
@@ -141,20 +180,18 @@ export const store = createStore({
           ]
         }
       }
-      //if the search key is empty, search in the category
-      if (searchKey === '') {
+      //search just depending on the category
+      if (searchKey === '' && category !== 'all') {
         query = {
           category: category.toLowerCase()
         }
       }
-      console.log(query)
       const response = await refsService.find({
         query: query,
         headers: {
           Authorization: `Bearer ${state.accessToken}`
         }
       })
-      console.log(response.data)
       this.commit('setRefs', response.data)
       return response.data
     },
@@ -185,6 +222,74 @@ export const store = createStore({
       )
       if (disliking) {
         this.commit('setRefInRefs', disliking)
+      }
+    },
+    //get comments of a reference
+    async getComments({ state }, id_Ref) {
+      const response = await commentsService.find({
+        query: {
+          id_Ref: id_Ref
+        },
+        headers: {
+          Authorization: `Bearer ${state.accessToken}`
+        }
+      })
+      //sort comments by likes
+      response.data = response.data.sort((a, b) => b.likers.length - a.likers.length)
+      this.commit('setComments', response.data)
+      return response.data
+    },
+    //add a comment
+    async addComment({ state }, commentData) {
+      const adding = await commentsService.create(commentData, {
+        headers: {
+          Authorization: `Bearer ${state.accessToken}`
+        }
+      })
+      this.commit('addComment', adding)
+      return adding
+    },
+    //delete a comment
+    async deleteComment({ state }, commentId) {
+      const deleting = await commentsService.remove(commentId, {
+        headers: {
+          Authorization: `Bearer ${state.accessToken}`
+        }
+      })
+      if (deleting) {
+        this.commit('deleteCommentInComments', commentId)
+      }
+      return deleting
+    },
+    //like a comment
+    async likeComment({ state }, id_comment) {
+      const liking = await commentsService.patch(
+        id_comment,
+        { $addToSet: { likers: state.user._id } },
+        {
+          headers: {
+            Authorization: `Bearer ${state.accessToken}`
+          }
+        }
+      )
+      if (liking) {
+        this.commit('setCommentInComments', liking)
+      }
+      return liking
+    },
+    //dislike a comment
+    async dislikeComment({ state }, id_comment) {
+      const disliking = await commentsService.patch(
+        id_comment,
+        { $pull: { likers: state.user._id } },
+        {
+          headers: {
+            Authorization: `Bearer ${state.accessToken}`
+          }
+        }
+      )
+      if (disliking) {
+        this.commit('setCommentInComments', disliking)
       }
     }
   }
