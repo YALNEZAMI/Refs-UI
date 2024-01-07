@@ -24,7 +24,7 @@ const commentsService = app.service('comments')
 export const store = createStore({
   state() {
     return {
-      accessToken: localStorage.getItem('feather-jwt') || '',
+      accessToken: localStorage.getItem('feathers-jwt') || '',
       refs: [],
       comments: [].sort((a, b) => b.likers.length - a.likers.length),
       user: JSON.parse(localStorage.getItem('user')) || {},
@@ -43,7 +43,7 @@ export const store = createStore({
 
     setAccessToken(state, token) {
       state.accessToken = token
-      localStorage.setItem('feather-jwt', token)
+      localStorage.setItem('feathers-jwt', token)
     },
     setRefs(state, refs) {
       state.refs = refs
@@ -83,6 +83,18 @@ export const store = createStore({
     }
   },
   actions: {
+    //login with google
+    async loginWithGoogle({ commit }) {
+      const result = await app.authenticate({
+        strategy: 'google'
+      })
+      console.log(result.accessToken, result.user)
+      //set token in the store
+      commit('setAccessToken', result.accessToken)
+      //set user in the store
+      commit('setUser', result.user)
+      return result
+    },
     //login the user
     async login({ commit }, loginData) {
       const result = await app.authenticate({ ...loginData, strategy: 'local' })
@@ -241,6 +253,12 @@ export const store = createStore({
     },
     //add a comment
     async addComment({ state }, commentData) {
+      const ref = await refsService.get(commentData.id_Ref, {
+        headers: {
+          Authorization: `Bearer ${state.accessToken}`
+        }
+      })
+      commentData.id_User_Of_Ref = ref.id_User
       const adding = await commentsService.create(commentData, {
         headers: {
           Authorization: `Bearer ${state.accessToken}`
@@ -291,6 +309,69 @@ export const store = createStore({
       if (disliking) {
         this.commit('setCommentInComments', disliking)
       }
+    },
+    //delete account
+    async deleteAccount({ state }) {
+      //delete all comments of the user or of the refs of the user
+      // await commentsService.remove(null, {
+      //   query: {
+      //     $or: [{ id_User: state.user._id }, { id_User_Of_Ref: state.user._id }]
+      //   },
+      //   headers: {
+      //     Authorization: `Bearer ${state.accessToken}`
+      //   }
+      // })
+      // //delete all refs of the user
+      // await refsService.remove(null, {
+      //   query: {
+      //     id_User: state.user._id
+      //   },
+      //   headers: {
+      //     Authorization: `Bearer ${state.accessToken}`
+      //   }
+      // })
+      const deleting = await userService.remove(state.user._id, {
+        headers: {
+          Authorization: `Bearer ${state.accessToken}`
+        }
+      })
+      const refsUser = await refsService.find({
+        query: {
+          id_User: state.user._id
+        },
+        headers: {
+          Authorization: `Bearer ${state.accessToken}`
+        }
+      })
+      for (let i = 0; i < refsUser.length; i++) {
+        const ref = refsUser[i]
+        await refsService.remove(ref._id, {
+          headers: {
+            Authorization: `Bearer ${state.accessToken}`
+          }
+        })
+      }
+      const commentsUser = await commentsService.find({
+        query: {
+          $or: [{ id_User: state.user._id }, { id_User_Of_Ref: state.user._id }]
+        },
+        headers: {
+          Authorization: `Bearer ${state.accessToken}`
+        }
+      })
+      for (let i = 0; i < commentsUser.length; i++) {
+        const comment = commentsUser[i]
+        await commentsService.remove(comment._id, {
+          headers: {
+            Authorization: `Bearer ${state.accessToken}`
+          }
+        })
+      }
+
+      if (deleting) {
+        this.commit('logout')
+      }
+      return deleting
     }
   }
 })

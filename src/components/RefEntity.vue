@@ -10,7 +10,7 @@
       <button
         v-if="!reference.likers.includes(store.state.user._id)"
         @click="like"
-        class="text-green-700 hover:text-green-500 flex flex-row space-x-2"
+        class="min-w-20 text-green-700 hover:text-green-500 flex flex-row space-x-2"
         :disabled="reference.likers.includes(store.state.user._id)"
       >
         <svg
@@ -33,7 +33,7 @@
       <button
         v-else
         @click="dislike"
-        class="text-orange-700 hover:text-orange-500 flex flex-row space-x-2"
+        class="min-w-20 text-orange-700 hover:text-orange-500 flex flex-row space-x-2"
         :disabled="!reference.likers.includes(store.state.user._id)"
       >
         <svg
@@ -55,7 +55,7 @@
       <!--comment-->
       <button
         @click="$router.push(`/admin/comments/${reference._id}`)"
-        class="text-blue-700 hover:text-blue-500 flex flex-row space-x-2"
+        class="min-w-20 text-blue-700 hover:text-blue-500 flex flex-row space-x-2"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -76,8 +76,8 @@
       <!--delete-->
       <button
         v-if="store.state.user._id == reference.id_User"
-        @click="deleteRef"
-        class="text-red-700 hover:text-red-500"
+        @click="confirmDelete = true"
+        class="min-w-20 text-red-700 hover:text-red-500"
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -95,16 +95,47 @@
         </svg>
       </button>
     </div>
+    <div v-if="confirmDelete" class="confirmDelete">
+      <div class="rounded bg-white p-5">
+        <p class="text-black">Are you sure you want to delete this reference ?</p>
+        <div class="flex justify-between px-10 mt-3">
+          <button
+            class="rounded bg-green-700 hover:bg-green-500 text-white p-2"
+            @click="confirmDelete = false"
+          >
+            No
+          </button>
+          <button class="rounded bg-red-700 hover:bg-red-500 text-white p-2" @click="deleteRef">
+            Yes
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
-<style scoped></style>
+<style scoped>
+.confirmDelete {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  opacity: 0.8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+</style>
 
 <script setup>
-import { defineProps, defineEmits } from 'vue'
+import { defineProps, defineEmits, ref } from 'vue'
 import { useStore } from 'vuex'
+const confirmDelete = ref(false)
 const store = useStore()
 const emit = defineEmits(['like', 'dislike'])
 const { reference } = defineProps(['reference'])
+
 const deleteRef = async () => {
   const deleting = await store.dispatch('deleteRef', reference._id)
   if (deleting) {

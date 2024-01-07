@@ -114,6 +114,23 @@
         </button>
       </form>
     </div>
+    <hr />
+
+    <input type="checkbox" class="mx-2" v-model="deleteAccountCheck" />
+    <label for=""
+      >You are aware that this action is going to delete definitively your account .</label
+    >
+    <button
+      @click="deleteAccount"
+      :disabled="!deleteAccountCheck"
+      class="bg-red-700 hover:bg-red-500 rounded p-2 m-2 text-white"
+      :class="{
+        'bg-red-700 hover:bg-red-500': deleteAccountCheck,
+        'bg-red-300 cursor-not-allowed': !deleteAccountCheck
+      }"
+    >
+      Delete account
+    </button>
   </div>
 </template>
 <style scoped>
@@ -134,11 +151,16 @@ const user = store.state.user
 const email = ref(user.email)
 const firstName = ref(user.firstName)
 const lastName = ref(user.lastName)
-let password = ref('')
-let confirmPassword = ref('')
-let alert = ref(false)
-let alertMessage = ref('')
+const password = ref('')
+const confirmPassword = ref('')
+const alert = ref(false)
+const alertMessage = ref('')
+const deleteAccountCheck = ref(false)
 
+const deleteAccount = () => {
+  store.dispatch('deleteAccount')
+  router.push('/authentication/login')
+}
 const update = () => {
   if (password.value !== confirmPassword.value) {
     lanceAlert('passwords do not match')

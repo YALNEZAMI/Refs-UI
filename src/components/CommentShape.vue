@@ -53,7 +53,7 @@
       <!--delete-->
       <button
         v-if="store.state.user._id == comment.id_User"
-        @click="deleteComment"
+        @click="confirmDelete = true"
         class="text-red-700 hover:text-red-500 flex flex-row space-x-2"
       >
         <svg
@@ -73,12 +73,43 @@
         <span>delete</span>
       </button>
     </div>
+    <div v-show="confirmDelete" class="confirmDelete">
+      <div class="rounded bg-white p-5">
+        <p class="text-black">Are you sure you want to delete this reference ?</p>
+        <div class="flex justify-between px-10 mt-3">
+          <button
+            class="rounded bg-green-700 hover:bg-green-500 text-white p-2"
+            @click="confirmDelete = false"
+          >
+            No
+          </button>
+          <button class="rounded bg-red-700 hover:bg-red-500 text-white p-2" @click="deleteComment">
+            Yes
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 </template>
-<style scoped></style>
+<style scoped>
+.confirmDelete {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: black;
+  opacity: 0.8;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+</style>
 <script setup>
-import { defineProps } from 'vue'
+import { defineProps, ref, onMounted } from 'vue'
 import { useStore } from 'vuex'
+const confirmDelete = ref(false)
+
 const store = useStore()
 const { comment } = defineProps(['comment'])
 const deleteComment = () => {
@@ -90,4 +121,5 @@ const likeComment = () => {
 const dislikeComment = () => {
   store.dispatch('dislikeComment', comment._id)
 }
+onMounted(() => {})
 </script>

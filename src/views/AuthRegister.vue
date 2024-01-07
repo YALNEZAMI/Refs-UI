@@ -115,11 +115,11 @@ import { useStore } from 'vuex'
 import { ref } from 'vue'
 import { useRouter } from 'vue-router'
 const router = useRouter()
-let firstName = ref('d')
-let lastName = ref('b')
-let email = ref('cd@g.com')
-let password = ref('11111')
-let confirmPassword = ref('11111')
+let firstName = ref('')
+let lastName = ref('')
+let email = ref('')
+let password = ref('')
+let confirmPassword = ref('')
 //alert
 let alert = ref(false)
 let alertMessage = ref('')
