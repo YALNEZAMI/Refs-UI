@@ -26,7 +26,7 @@
             placeholder="******************"
           />
         </div>
-        <p class="bg-red-100 text-center p-1 mb-2 rounded" v-if="alert">{{ alertMessage }}cc</p>
+        <p class="bg-red-100 text-center p-1 mb-2 rounded" v-if="alert">{{ alertMessage }}</p>
 
         <div class="flex items-center justify-between">
           <button
@@ -127,13 +127,13 @@ const signIn = async () => {
     lanceAlert('Wrong email or password')
   }
 }
-const googleOauth = async () => {
-  window.location.href = 'http://localhost:3030/oauth/google'
-  // store.dispatch('loginWithGoogle')
-}
-const githubOauth = async () => {
-  window.location.href = 'http://localhost:3030/oauth/github'
-}
+// const googleOauth = async () => {
+//   window.location.href = 'http://localhost:3030/oauth/google'
+//   // store.dispatch('loginWithGoogle')
+// }
+// const githubOauth = async () => {
+//   window.location.href = 'http://localhost:3030/oauth/github'
+// }
 // import axios from 'axios'
 
 // const getUserInfoFromGoogle = async (accessToken) => {

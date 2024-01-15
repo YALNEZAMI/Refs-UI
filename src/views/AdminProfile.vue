@@ -1,8 +1,11 @@
 <template>
   <div class="container p-3">
     <div class="flex justify-between">
-      <ButtonBack />
-      <button @click="logout" class="rounded p-2 text-red-700 hover:bg-red-500 hover:text-white">
+      <ButtonBack title="Return" />
+      <div
+        @click="logout"
+        class="flex flex-row cursor-pointer text-center rounded p-2 text-red-700 hover:bg-red-500 hover:text-white"
+      >
         <svg
           xmlns="http://www.w3.org/2000/svg"
           fill="none"
@@ -17,9 +20,10 @@
             d="M8.25 9V5.25A2.25 2.25 0 0 1 10.5 3h6a2.25 2.25 0 0 1 2.25 2.25v13.5A2.25 2.25 0 0 1 16.5 21h-6a2.25 2.25 0 0 1-2.25-2.25V15m-3 0-3-3m0 0 3-3m-3 3H15"
           />
         </svg>
-      </button>
+        <p class="w-max">Logout</p>
+      </div>
     </div>
-    <div class="form-container">
+    <div class="form-container my-2">
       <form class="w-full max-w-lg">
         <div class="flex flex-wrap -mx-3 mb-5">
           <div class="w-full md:w-1/2 px-3 mb-3 md:mb-0">
@@ -116,14 +120,15 @@
     </div>
     <hr />
 
-    <input type="checkbox" class="mx-2" v-model="deleteAccountCheck" />
-    <label for=""
+    <input id="checkDelete" type="checkbox" class="mx-2" v-model="deleteAccountCheck" />
+    <label for="checkDelete"
       >You are aware that this action is going to delete definitively your account .</label
     >
+    <br />
     <button
       @click="deleteAccount"
       :disabled="!deleteAccountCheck"
-      class="bg-red-700 hover:bg-red-500 rounded p-2 m-2 text-white"
+      class="hover:bg-red-500 rounded p-2 m-2 text-white"
       :class="{
         'bg-red-700 hover:bg-red-500': deleteAccountCheck,
         'bg-red-300 cursor-not-allowed': !deleteAccountCheck

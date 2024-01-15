@@ -5,6 +5,7 @@ import AdminRefsVue from '@/views/AdminRefs.vue'
 import AddRefVue from '@/views/AddRef.vue'
 import AdminProfileVue from '@/views/AdminProfile.vue'
 import AdminCommentsVue from '@/views/AdminComments.vue'
+import AdminPostsVue from '@/views/AdminPosts.vue'
 
 const router = createRouter({
   history: createWebHistory(import.meta.env.BASE_URL),
@@ -53,6 +54,11 @@ const router = createRouter({
           path: 'comments/:id_Ref',
           name: 'ref comments',
           component: AdminCommentsVue
+        },
+        {
+          path: 'posts',
+          name: 'my ref requests',
+          component: AdminPostsVue
         }
       ]
     }
